@@ -8,7 +8,6 @@ import { serverUrl } from '../App.jsx';
 import axios from 'axios';
 function SignUp() {
     const primaryColor = '#ff4d2d'
-    const hoverColor = '#e64323'
     const bgColor = '#fff9f6'
     const borderColor = '#ddd'
     const [showPassword, setShowPassword]=useState(false);
@@ -41,7 +40,7 @@ function SignUp() {
 
   return (
     <div className='min-h-screen w-full flex items-center justify-center p-4'style={{backgroundColor: bgColor}}>
-        <div className={`bg-white rounded-xl shadow-lg w-full max-w-md p-8 border-[1px] `}
+        <div className={`bg-white rounded-xl shadow-lg w-full max-w-md p-8 border `}
         style={{
             border:`1px solid ${borderColor}`,
         }}>
@@ -54,7 +53,7 @@ function SignUp() {
             </p>
             {/*fullName*/}
             <div className="mb-4">
-                <label htmlFor="fullName" className="block text-gray-700 font -medium mb-1">
+                <label htmlFor="fullName" className="block text-gray-700 font-medium mb-1">
                     Full Name
                 </label>
                 <input type="text" className='w-full border rounded-lg px-3 py-2' placeholder='Enter your Full Name'style={{color: borderColor}} onChange={(e)=>{
@@ -63,7 +62,7 @@ function SignUp() {
             </div>
             {/*email*/}
             <div className="mb-4">
-                <label htmlFor="email" className="block text-gray-700 font -medium mb-1">
+                <label htmlFor="email" className="block text-gray-700 font-medium mb-1">
                     Email
                 </label>
                 <input type="email" className='w-full border rounded-lg px-3 py-2' placeholder='Enter your Full Email' style={{color: borderColor}}
@@ -73,7 +72,7 @@ function SignUp() {
             </div>
             {/*mobile*/}
             <div className="mb-4">
-                <label htmlFor="mobile" className="block text-gray-700 font -medium mb-1">
+                <label htmlFor="mobile" className="block text-gray-700 font-medium mb-1">
                     Mobile
                 </label>
                 <input type="tel" className='w-full border rounded-lg px-3 py-2 ' placeholder='Enter your Mobile Number'style={{color: borderColor}} onChange={(e)=>{
@@ -82,7 +81,7 @@ function SignUp() {
             </div>
             {/*password*/}
             <div className="mb-4">
-                <label htmlFor="password" className="block text-gray-700 font -medium mb-1">
+                <label htmlFor="password" className="block text-gray-700 font-medium mb-1">
                     Password
                 </label>
                 <div className='relative'>
@@ -90,13 +89,13 @@ function SignUp() {
                 onChange={(e)=>{
                     setPassword(e.target.value)
                 }} value={password}/>
-                <button className='absolute right-3 cursor-pointer top-[14px] text-gray-500' onClick={()=>setShowPassword(prev=>!prev)}>{!showPassword?<FaRegEye />:<FaRegEyeSlash />}</button>
+                <button className='absolute right-3 cursor-pointer top-3.5 text-gray-500' onClick={()=>setShowPassword(prev=>!prev)}>{!showPassword?<FaRegEye />:<FaRegEyeSlash />}</button>
                 </div>
             </div>
 
             {/*role*/}
             <div className="mb-4">
-                <label htmlFor="role" className="block text-gray-700 font -medium mb-1">
+                <label htmlFor="role" className="block text-gray-700 font-medium mb-1">
                     Role
                 </label>
                 <div className='flex gap-2'>
@@ -116,7 +115,7 @@ function SignUp() {
                 ))}
                 </div>
             </div>
-            <button className={`w-full mt-4 font-semibold py-2 rounded-lg transition duration-200 bg-[#ff4d2d] text-white hover:bg-[#e64323]cursor-pointer`}
+            <button className='w-full mt-4 font-semibold py-2 rounded-lg transition duration-200 bg-[#ff4d2d] text-white hover:bg-[#e64323] cursor-pointer'
             onClick={handleSignUp}>
                 sign Up
             </button>

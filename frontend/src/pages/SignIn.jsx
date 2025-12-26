@@ -8,7 +8,6 @@ import { serverUrl } from '../App.jsx';
 import axios from 'axios';
 function SignIn() {
     const primaryColor = '#ff4d2d'
-    const hoverColor = '#e64323'
     const bgColor = '#fff9f6'
     const borderColor = '#ddd'
     const [showPassword, setShowPassword]=useState(false);
@@ -35,7 +34,7 @@ function SignIn() {
 
   return (
     <div className='min-h-screen w-full flex items-center justify-center p-4'style={{backgroundColor: bgColor}}>
-        <div className={`bg-white rounded-xl shadow-lg w-full max-w-md p-8 border-[1px] `}
+        <div className={`bg-white rounded-xl shadow-lg w-full max-w-md p-8 border `}
         style={{
             border:`1px solid ${borderColor}`,
         }}>
@@ -49,7 +48,7 @@ function SignIn() {
            
             {/*email*/}
             <div className="mb-4">
-                <label htmlFor="email" className="block text-gray-700 font -medium mb-1">
+                <label htmlFor="email" className="block text-gray-700 font-medium mb-1">
                     Email
                 </label>
                 <input type="email" className='w-full border rounded-lg px-3 py-2' placeholder='Enter your Full Email' style={{color: borderColor}}
@@ -60,7 +59,7 @@ function SignIn() {
            
             {/*password*/}
             <div className="mb-4">
-                <label htmlFor="password" className="block text-gray-700 font -medium mb-1">
+                <label htmlFor="password" className="block text-gray-700 font-medium mb-1">
                     Password
                 </label>
                 <div className='relative'>
@@ -68,7 +67,7 @@ function SignIn() {
                 onChange={(e)=>{
                     setPassword(e.target.value)
                 }} value={password}/>
-                <button className='absolute right-3 cursor-pointer top-[14px] text-gray-500' onClick={()=>setShowPassword(prev=>!prev)}>{!showPassword?<FaRegEye />:<FaRegEyeSlash />}</button>
+                <button className='absolute right-3 cursor-pointer top-3.5 text-gray-500' onClick={()=>setShowPassword(prev=>!prev)}>{!showPassword?<FaRegEye />:<FaRegEyeSlash />}</button>
                 </div>
             </div>
             <div className='text-right mb-4 text-[#ff4d2d] cursor-pointer font-medium' onClick={() => navigate('/forgot-password')}>
@@ -76,7 +75,7 @@ function SignIn() {
             </div>
 
            
-            <button className={`w-full mt-4 font-semibold py-2 rounded-lg transition duration-200 bg-[#ff4d2d] text-white hover:bg-[#e64323]cursor-pointer`}
+            <button className='w-full mt-4 font-semibold py-2 rounded-lg transition duration-200 bg-[#ff4d2d] text-white hover:bg-[#e64323] cursor-pointer'
             onClick={handleSignIn}>
                 sign In
             </button>
