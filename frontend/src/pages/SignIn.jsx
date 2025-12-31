@@ -7,6 +7,8 @@ import axios from 'axios';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '../../firebase.js';
 import { ClipLoader } from 'react-spinners';
+import { useDispatch } from 'react-redux';
+import { setUserData } from '../redux/userSlice.js';
 function SignIn() {
     const primaryColor = '#ff4d2d';
     const bgColor = '#fff9f6';
@@ -17,6 +19,7 @@ function SignIn() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const dispatch = useDispatch();
 
     const handleSignIn = async () => {
         setLoading(true);
@@ -27,7 +30,7 @@ function SignIn() {
             }, {
                 withCredentials: true,
             });
-            console.log('signin successful', result);
+            dispatch(setUserData(result.data))
             setError('');
             setLoading(false);
         } catch (error) {
@@ -44,7 +47,7 @@ function SignIn() {
             }, {
                 withCredentials: true,
             });
-            console.log(data);
+            dispatch(setUserData(data));
             setError('');
         } catch (error) {
             setError(error?.response?.data?.message);
