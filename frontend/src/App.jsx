@@ -1,16 +1,19 @@
 import React from 'react'
-import { Routes,Route } from 'react-router-dom'
+import { Routes,Route,Navigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+
 import SignUp from './pages/SignUp.jsx'
 import SignIn from './pages/SignIn.jsx'
 import ForgotPassword from './pages/ForgotPassword.jsx'
 import useGetCurrentUser from './hooks/useGetCurrentUser.jsx'
-import { useSelector } from 'react-redux'
-export const serverUrl="http://localhost:8000"
+import useGetCity from './hooks/useGetCity.jsx'
 import Home from './pages/Home.jsx'
 
+export const serverUrl="http://localhost:8000"
 
 function App() {
   useGetCurrentUser();
+  useGetCity();
   const {userData}=useSelector((state)=>state.user);
   return (
     <Routes>
