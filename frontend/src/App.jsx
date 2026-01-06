@@ -8,12 +8,15 @@ import ForgotPassword from './pages/ForgotPassword.jsx'
 import useGetCurrentUser from './hooks/useGetCurrentUser.jsx'
 import useGetCity from './hooks/useGetCity.jsx'
 import Home from './pages/Home.jsx'
+import { use } from 'react'
+import useGetMyShop from './hooks/useGetMyShop.jsx'
 
 export const serverUrl="http://localhost:8000"
 
 function App() {
   useGetCurrentUser();
   useGetCity();
+  useGetMyShop();
   const {userData}=useSelector((state)=>state.user);
   return (
     <Routes>
