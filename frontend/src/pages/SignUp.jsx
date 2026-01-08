@@ -77,11 +77,11 @@ function SignUp() {
         style={{
             border:`1px solid ${borderColor}`,
         }}>
-            <h1 className={`text-3xl font-bold mb-2 `}
+            <h1 className={`text-3xl font-bold mb-2 text-center`}
             style={{color: primaryColor}}>
                 Vingo
             </h1>
-            <p className='text-gray-600 mb-8'>
+            <p className='text-gray-600 mb-8 text-center'>
                 Create your account to get started with delicious food deliveries.
             </p>
             {/*fullName*/}
