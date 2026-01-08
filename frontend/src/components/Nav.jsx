@@ -11,10 +11,10 @@ import { FaPlus } from "react-icons/fa6";
 import { TbReceiptDollar } from "react-icons/tb";
 
 import { serverUrl } from '../App.jsx';
-import { setUserData, setCity } from '../redux/userSlice.js';
+import { setUserData, setCurrentCity } from '../redux/userSlice.js';
 
 function Nav() {
-  const { userData, city } = useSelector((state) => state.user);
+  const { userData, currentCity } = useSelector((state) => state.user);
   const { myShopData } = useSelector((state) => state.owner);
   const [showInfo, setShowInfo] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -26,7 +26,7 @@ function Nav() {
         withCredentials: true,
       });
       dispatch(setUserData(null));
-      dispatch(setCity(null));
+      dispatch(setCurrentCity(null));
     } catch (error) {
       console.log('error in logout', error);
     }
@@ -39,7 +39,7 @@ function Nav() {
         {/* location */}
         <div className='flex items-center w-[30%] overflow-hidden gap-[10px] border-r-[2px] border-gray-400 '>
           <FaLocationDot size={25} className=' text-[#ff4d2d]' />
-          <div className='w-[80%] truncate text-gray-600'>{city}</div>
+          <div className='w-[80%] truncate text-gray-600'>{currentCity}</div>
         </div>
         {/* search */}
         <div className='w-[80%] flex items-center gap-[10px] '>
@@ -53,7 +53,7 @@ function Nav() {
         {/* location */}
         <div className='flex items-center w-[30%] overflow-hidden gap-[10px] border-r-[2px] border-gray-400 '>
           <FaLocationDot size={25} className=' text-[#ff4d2d]' />
-          <div className='w-[80%] truncate text-gray-600'>{city}</div>
+          <div className='w-[80%] truncate text-gray-600'>{currentCity}</div>
         </div>
         {/* search */}
         <div className='w-[80%] flex items-center gap-[10px] '>

@@ -10,6 +10,8 @@ import useGetCity from './hooks/useGetCity.jsx'
 import Home from './pages/Home.jsx'
 import { use } from 'react'
 import useGetMyShop from './hooks/useGetMyShop.jsx'
+import CreateEditShop from './pages/CreateEditShop.jsx'
+import AddItem from './pages/AddItem.jsx'
 
 export const serverUrl="http://localhost:8000"
 
@@ -24,6 +26,8 @@ function App() {
       <Route path="/signin" element={!userData?<SignIn />:<Navigate to="/" />} />
       <Route path="/forgot-password" element={!userData?<ForgotPassword />:<Navigate to="/" />} />
       <Route path="/" element={userData?<Home />:<Navigate to="/signin" />} />
+      <Route path="/create-edit" element={userData?<CreateEditShop />:<Navigate to="/signin" />} />
+      <Route path="/add-item" element={userData?<AddItem/>:<Navigate to="/signin" />} />
     </Routes>
   )
 }
