@@ -5,6 +5,7 @@ import axios from "axios";
 
 import { serverUrl } from "../App.jsx";
 import { IoMdArrowBack } from "react-icons/io";
+import { ClipLoader } from "react-spinners";
 import { FaUtensils } from "react-icons/fa";
 
 function CreateEditShop() {
@@ -30,6 +31,7 @@ function CreateEditShop() {
     myShopData ? myShopData.image : null
   );
   const [backendImage, setBackendImage] = useState(null);
+  const [loading,setLoading]=useState(false);
 
   const handleImage = (e) => {
     const file = e.target.files[0];
@@ -39,7 +41,7 @@ function CreateEditShop() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setLoading(true);
     try {
       const formData = new FormData();
       formData.append("name", name);
@@ -58,8 +60,11 @@ function CreateEditShop() {
       );
 
       console.log(result.data);
+      setLoading(false);
+      navigate("/");
     } catch (error) {
       console.log(error);
+      setLoading(false);
     }
   };
 
@@ -163,8 +168,9 @@ function CreateEditShop() {
           <button
             type="submit"
             className="w-full cursor-pointer rounded-lg bg-[#ff4d2d] px-6 py-3 font-semibold text-white shadow-md transition-all duration-200 hover:bg-orange-600 hover:shadow-lg"
+            disabled={loading}
           >
-            Save
+            {loading ? <ClipLoader size={20} color="white" /> : "Save"}
           </button>
         </form>
       </div>
