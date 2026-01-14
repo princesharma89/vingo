@@ -35,7 +35,7 @@ function Nav() {
   };
 
   return (
-    <div className='w-full h-[80px] flex items-center justify-between md:justify-center gap-[30px] px-[20px] fixed top-0 left-0 z-[999] bg-[#fff9f6] overflow-visible'>
+    <div className='w-full max-w-10xl h-[80px] flex items-center justify-between md:justify-center gap-[30px] px-[20px] fixed top-0 left-0 z-[999] bg-[#fff9f6] overflow-visible'>
       {/*show search for mobile */}
       {showSearch && userData.role == 'user' && <div className='w-[90%]  h-[70px]  bg-white shadow-xl rounded-lg items-center gap-[20px] flex fixed top-[70px] left-[5%] md:hidden z-[999]'>
         {/* location */}
@@ -108,7 +108,7 @@ function Nav() {
         </div>
         {showInfo && <div className='fixed top-[80px] right-[10px] md:right-[10%] lg:right-[25%] w-[180px] bg-white shadow-2xl rounded-xl p-[20px] flex flex-col gap-[10px] z-[999]'>
           <div className='text-[17px] font-semibold'>{userData?.fullName}</div>
-          {userData?.role == 'owner' && <div className='md:hidden text-[#ff4d2d] font-semibold cursor-pointer'>My Orders</div>}
+          {userData?.role == 'user' && <div className='md:hidden text-[#ff4d2d] font-semibold cursor-pointer'>My Orders</div>}
           <div className='text-[#ff4d2d] font-semibold cursor-pointer' onClick={handleLogOut}>Log Out</div>
         </div>}
       </div>
