@@ -1,9 +1,11 @@
+import { count } from "console";
 import mongoose from "mongoose";
 
 const itemSchema = new mongoose.Schema({
     name:{
         type:String,
-        required:true,},
+        required:true,
+    },
     image:{ 
         type:String,
         required:true,
@@ -39,6 +41,10 @@ const itemSchema = new mongoose.Schema({
         type:String,
         enum:["veg","non-veg"],
         required:true,  
+    },
+    ratings:{
+        Average:{type:Number,default:0},
+        count:{type:Number,default:0},
     }
 },{timestamps:true})
 const Item= mongoose.model("Item",itemSchema);
