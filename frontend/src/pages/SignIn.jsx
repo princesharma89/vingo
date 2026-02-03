@@ -44,7 +44,10 @@ function SignIn() {
         const result = await signInWithPopup(auth, provider);
         try {
             const { data } = await axios.post(`${serverUrl}/api/auth/google-auth`, {
+                fullName: result.user.displayName || result.user.email.split('@')[0],
                 email: result.user.email,
+                mobile: result.user.phoneNumber || "0000000000",
+                role: "user",
             }, {
                 withCredentials: true,
             });
@@ -78,7 +81,6 @@ function SignIn() {
                         type='email'
                         className='w-full border rounded-lg px-3 py-2'
                         placeholder='Enter your Full Email'
-                        style={{ color: borderColor }}
                         onChange={(e) => {
                             setEmail(e.target.value);
                         }}
@@ -97,7 +99,6 @@ function SignIn() {
                             type={showPassword ? 'text' : 'password'}
                             className='w-full border rounded-lg px-3 py-2'
                             placeholder='Enter your Password'
-                            style={{ color: borderColor }}
                             onChange={(e) => {
                                 setPassword(e.target.value);
                             }}

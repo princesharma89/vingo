@@ -89,7 +89,7 @@ function SignUp() {
                 <label htmlFor="fullName" className="block text-gray-700 font-medium mb-1">
                     Full Name
                 </label>
-                <input type="text" className='w-full border rounded-lg px-3 py-2' placeholder='Enter your Full Name'style={{color: borderColor}} onChange={(e)=>{
+                <input type="text" className='w-full border rounded-lg px-3 py-2' placeholder='Enter your Full Name' onChange={(e)=>{
                     setFullName(e.target.value)
                 }} value={fullName} required/>
             </div>
@@ -98,7 +98,7 @@ function SignUp() {
                 <label htmlFor="email" className="block text-gray-700 font-medium mb-1">
                     Email
                 </label>
-                <input type="email" className='w-full border rounded-lg px-3 py-2' placeholder='Enter your Full Email' style={{color: borderColor}}
+                <input type="email" className='w-full border rounded-lg px-3 py-2' placeholder='Enter your Full Email'
                 onChange={(e)=>{
                     setEmail(e.target.value)
                 }} value={email}
@@ -109,7 +109,7 @@ function SignUp() {
                 <label htmlFor="mobile" className="block text-gray-700 font-medium mb-1">
                     Mobile
                 </label>
-                <input type="tel" className='w-full border rounded-lg px-3 py-2 ' placeholder='Enter your Mobile Number'style={{color: borderColor}} onChange={(e)=>{
+                <input type="tel" className='w-full border rounded-lg px-3 py-2 ' placeholder='Enter your Mobile Number' onChange={(e)=>{
                     setMobile(e.target.value)
                 }} value={mobile} required/>
             </div>
@@ -119,7 +119,7 @@ function SignUp() {
                     Password
                 </label>
                 <div className='relative'>
-                <input type={showPassword ? "text" : "password"} className='w-full border rounded-lg px-3 py-2 ' placeholder='Enter your Password'style={{color: borderColor}}
+                <input type={showPassword ? "text" : "password"} className='w-full border rounded-lg px-3 py-2 ' placeholder='Enter your Password'
                 onChange={(e)=>{
                     setPassword(e.target.value)
                 }} value={password} required/>

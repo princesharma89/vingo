@@ -9,7 +9,6 @@ import { categories } from "../category";
 import CategoryCard from "./CategoryCard";
 import FoodCard from "./FoodCard";
 
-
 function UserDashboard() {
   const {currentCity,shopInMyCity,itemsInMyCity}= useSelector((state)=>state.user);
   const cateScrollRef = useRef(null);
