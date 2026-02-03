@@ -15,7 +15,7 @@ import { serverUrl } from '../App.jsx';
 import { setUserData, setCurrentCity } from '../redux/userSlice.js';
 
 function Nav() {
-  const { userData, currentCity } = useSelector((state) => state.user);
+  const { userData, currentCity,cartItems} = useSelector((state) => state.user);
   const { myShopData } = useSelector((state) => state.owner);
   const [showInfo, setShowInfo] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -91,9 +91,9 @@ function Nav() {
           </div>
         </>:(<>
         {/* cart */}
-         <div className='relative cursor-pointer'>
+         <div className='relative cursor-pointer' onClick={() => navigate('/cart')}>
           <IoCartOutline size={25} className='text-[#ff4d2d]' />
-          <span className='absolute right-[-9px] top-[-12px] text-[#ff4d2d]'>0</span>
+          <span className='absolute right-[-9px] top-[-12px] text-[#ff4d2d]'>{cartItems.length}</span>
         </div>
         {/*My Order Button*/}
         <button className='hidden md:block px-3 py-1 rounded-lg bg-[#ff4d2d]/10 text-[#ff4d2d] text-sm font-medium'>
