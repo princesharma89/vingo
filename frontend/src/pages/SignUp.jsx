@@ -43,6 +43,7 @@ function SignUp() {
         dispatch(setUserData(result.data))
         setError('');
         setLoading(false);
+        navigate('/');
         }
         catch(error){
             setError(error.response.data.message);
@@ -66,6 +67,7 @@ function SignUp() {
             withCredentials:true,
         })
         dispatch(setUserData(data))
+        navigate('/');
     }
         catch(error){
            setError(error.response.data.message);

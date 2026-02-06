@@ -1,6 +1,7 @@
-import React, { use } from 'react'
+import React from 'react'
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { serverUrl } from '../App.jsx';
 
 import { useNavigate } from 'react-router-dom';
 import { IoMdArrowBack } from "react-icons/io";
@@ -71,6 +72,27 @@ function CheckOut() {
             console.error("Error fetching latlng:", error);
         }
     }
+    const handlePlaceOrder=async()=>{
+        try {
+            const result=await axios.post(`${serverUrl}/api/order/place-order`,{
+                paymentMethod,
+                deliveryAddress:{
+                    text:addressInput,
+                    latitude:location.lat,
+                    longitude:location.lon,
+                },
+                cartItems,
+                totalAmount
+            },{
+                withCredentials:true,
+            });
+            console.log("Order placed successfully:",result.data);
+            navigate("/order-placed");
+        } catch (error) {
+            console.log("Error placing order:",error);
+        }
+    }
+
     useEffect(() => {
         setAddressInput(address);
     }, [address]);
@@ -158,7 +180,7 @@ function CheckOut() {
                     </div>
                     </div>
                 </section>
-                <button className='w-full bg-[#ff4d2d] hover:bg-[#e64526] text-white py-3 rounded-xl text-lg font-semibold transition cursor-pointer'>
+                <button className='w-full bg-[#ff4d2d] hover:bg-[#e64526] text-white py-3 rounded-xl text-lg font-semibold transition cursor-pointer' onClick={handlePlaceOrder}>
                     {paymentMethod==='cod'?"Place Order":"Pay & Place Order"}
                 </button>
             </div >
