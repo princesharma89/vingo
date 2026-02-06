@@ -34,6 +34,7 @@ function SignIn() {
             dispatch(setUserData(result.data))
             setError('');
             setLoading(false);
+            navigate('/');
         } catch (error) {
             setError(error?.response?.data?.message);
             setLoading(false);
@@ -53,6 +54,7 @@ function SignIn() {
             });
             dispatch(setUserData(data));
             setError('');
+            navigate('/');
         } catch (error) {
             setError(error?.response?.data?.message);
         }
