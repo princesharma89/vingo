@@ -4,6 +4,7 @@ const shopOrderItemSchema = new mongoose.Schema({
     item:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Item",
+        required:true,
     },
     name:String,
     quantity:Number,
@@ -20,7 +21,12 @@ const shopOrderSchema=new mongoose.Schema({
         ref:"User",
     },
     subTotal:Number,
-    shopOrderItems:[shopOrderItemSchema]
+    shopOrderItems:[shopOrderItemSchema],
+    status:{
+        type:String,
+        enum:["pending","accepted","preparing","ready for pickup","out for delivery","delivered","cancelled"],
+        default:"pending",
+    }
 },{timestamps:true})
 const orderSchema=new mongoose.Schema({
     user:{

@@ -20,8 +20,8 @@ function CartPage() {
                   onClick={() => navigate("/")}
                   >
                   <IoMdArrowBack size={35} className="text-[#ff4d2d]" />
-                </div>
-                <h1>Your Cart</h1>
+            </div>
+                <h1 className='text-2xl font-bold text-start'>Your Cart</h1>
           </div>
           {cartItems?.length === 0 ? (
             <p className="text-gray-500 text-lg text-center">Your Cart is empty</p>
