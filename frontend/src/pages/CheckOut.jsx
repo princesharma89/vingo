@@ -18,6 +18,7 @@ import { setAddress, setLocation } from '../redux/mapSlice.js';
 import { MdDeliveryDining } from "react-icons/md";
 import { FaMobileAlt } from "react-icons/fa";
 import { FaCreditCard } from "react-icons/fa";
+import { addMyOrder } from '../redux/userSlice.js';
 
 function RecenterMap({ location }) {
     const map = useMap();
@@ -86,6 +87,7 @@ function CheckOut() {
             },{
                 withCredentials:true,
             });
+            dispatch(addMyOrder(result.data));
             console.log("Order placed successfully:",result.data);
             navigate("/order-placed");
         } catch (error) {
