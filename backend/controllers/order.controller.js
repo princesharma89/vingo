@@ -104,3 +104,29 @@ export const getMyOrders = async (req, res) => {
     return res.status(500).json({ message: `fetching order failed ${error}` });
   }
 };
+
+export const updateOrderStatus= async(req,res)=>{
+  try {
+    const {orderId,shopId}=req.params;
+    const {status}=req.body;
+    
+    if(!status){
+      return res.status(400).json({message:"status is required"})
+    }
+    
+    const order = await Order.findById(orderId);
+    if(!order){
+      return res.status(404).json({message:"Order not found"})
+    }
+
+    const shopOrder = order.shopOrders.find(o=>o.shop?.toString()==shopId)
+    if(!shopOrder){
+      return res.status(400).json({message:"shop order not found"})
+    }
+    shopOrder.status=status;
+    await order.save();
+    return res.status(200).json(shopOrder.status);
+  } catch (error) {
+    return res.status(500).json({message:`updating order status failed ${error}`})
+  }
+}
