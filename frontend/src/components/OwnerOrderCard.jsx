@@ -1,13 +1,15 @@
-import React from 'react'
+import React, { useState } from 'react';
 import axios from 'axios';
 import { serverUrl } from '../App.jsx';
 import { useDispatch } from 'react-redux';
-import { updateOrderStatus } from '../redux/userSlice';
 
+import { updateOrderStatus } from '../redux/userSlice';
 import { MdLocalPhone } from "react-icons/md";
 
 function OwnerOrderCard({ data }) {
+  const [availableDeliveryBoys, setAvailableDeliveryBoys] = useState([]);
   const dispatch = useDispatch();
+
   const handleOrderStatus = async (orderId, shopId, status) => {
     try {
       const response = await axios.post(
@@ -15,13 +17,15 @@ function OwnerOrderCard({ data }) {
         { status },
         { withCredentials: true }
       );
-      dispatch(updateOrderStatus({orderId, shopId, status}));
+
+      dispatch(updateOrderStatus({ orderId, shopId, status }));
+      setAvailableDeliveryBoys(response.data.availableBoys);
+
       console.log(response.data);
     } catch (error) {
       console.error('Error updating order status:', error);
     }
-  };  
-
+  };
 
   return (
     <div className='bg-white rounded-lg shadow p-4 space-y-4'>
@@ -65,7 +69,8 @@ function OwnerOrderCard({ data }) {
           </div>
         ))}
       </div>
-
+      
+      <div className="flex flex-col">
       <div className='flex justify-between items-center mt-auto pt-3 border-t border-gray-100'>
         <span className='text-sm'>
           Status:
@@ -78,23 +83,37 @@ function OwnerOrderCard({ data }) {
           className='rounded-md border px-3 py-1 text-sm focus:outline-none focus:ring-2 border-[#ff4d2d] text-[#ff4d2d]'
           onChange={(e) =>
             handleOrderStatus(
-              data._id,
-              data.shopOrders?.[0]?.shop?._id,
+              data?._id,
+              data?.shopOrders?.[0]?.shop?._id,
               e.target.value
             )
           }
-        >
+          >
           <option value="">"Change"</option>
           <option value="pending">Pending</option>
           <option value="preparing">Preparing</option>
+          <option value="ready for pickup">Ready for Pickup</option>
           <option value="out for delivery">Out for Delivery</option>
         </select>
+
+        </div>
+        {data?.shopOrders?.[0]?.status === "ready for pickup" && (
+          <div className='mt-3 p-2 border rounded-lg text-sm bg-orange-50'>
+           <p>Available Delivery Boys: </p>
+            {availableDeliveryBoys.length > 0 ? (
+              availableDeliveryBoys.map((boy) => (
+                <div className='text-gray-800'>{ boy.name} - {boy .mobile}</div>
+              ))
+            ) : (
+              <div className='text-gray-500'>waiting for delivery boys to accept</div>)}
+          </div>
+        )}
 
         <div className='text-right font-bold text-gray-800 text-sm'>
           Total: ₹{data?.shopOrders?.[0]?.subTotal}
         </div>
-      </div>
     </div>
+          </div>
   );
 }
 
