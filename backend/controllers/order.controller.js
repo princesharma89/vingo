@@ -144,7 +144,7 @@ export const updateOrderStatus = async (req, res) => {
 
     shopOrder.status = status;
     let deliveryBoysPayload=[];
-    if (status === "ready for pickup" || !shopOrder.assignment) 
+    if (status === "ready for pickup" && !shopOrder.assignment) 
       {
       const { latitude, longitude } = order.deliveryAddress;
       const nearByDeliveryBoys = await User.find({
@@ -216,3 +216,34 @@ export const updateOrderStatus = async (req, res) => {
       .json({ message: `updating order status failed ${error}` });
   }
 };
+export const getDeliveryBoyAssignment = async (req,res)=>{
+        try {
+          const deliveryBoyId = req.userId;
+          const assignments = await DeliveryAssignment.find({
+            broadcatedTo: deliveryBoyId,
+            status: "broadcasted",
+          })
+          .populate("order")
+          .populate("shop")
+          
+          const formated=assignments.map(a=>{
+            if(!a.order || !a.shop){
+              return null;
+            }
+            const shopOrder = a.order.shopOrders?.find(so=>so._id.toString()===a.shopOrderId.toString());
+            return {
+              assignmentId:a._id,
+              orderId: a.order._id,
+              shopName: a.shop.name,
+              deliveryAddress: a.order.deliveryAddress,
+              items: shopOrder?.shopOrderItems || [],
+              subTotal: shopOrder?.subTotal || 0,
+            }
+          }).filter(a=>a!==null);
+          
+          return res.status(200).json(formated);
+        } catch (error) {
+          console.error('get assignment error:', error);
+          return res.status(500).json({ message: 'get assignment error', error: error.message});
+        }
+}
