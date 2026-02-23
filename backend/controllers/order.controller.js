@@ -2,6 +2,7 @@ import Shop from "../models/shop.model.js";
 import Order from "../models/order.model.js";
 import User from "../models/user.model.js";
 import DeliveryAssignment from "../models/deliveryAssigment.model.js";
+import { model } from "mongoose";
 
 export const placeOrder = async (req, res) => {
   try {
@@ -329,5 +330,24 @@ export const getCurrentOrder= async (req,res)=>{
       })
   } catch (error) {
     return res.status(500).json({ message: "Error fetching current order", error: error.message });
+  }
+}
+
+export const getOrderById = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const order = await Order.findById(orderId)
+    .populate("user", "fullName email mobile location")
+    .populate("shopOrders.shop", "name")
+    .populate("shopOrders.shopOrderItems.item", "name image price")
+    .populate("shopOrders.assignedDeliveryBoy", "fullName email mobile location")
+    .lean();
+    if(!order){
+      return res.status(404).json({ message: "order not found" });
+    }
+    return res.status(200).json(order);
+  } catch (error) {
+    console.error("Error fetching order by ID:", error);
+    return res.status(500).json({ message: "Error fetching order by ID", error: error.message });
   }
 }
