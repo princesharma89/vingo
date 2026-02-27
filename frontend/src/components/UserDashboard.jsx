@@ -8,11 +8,13 @@ import Nav from "./Nav";
 import { categories } from "../category";
 import CategoryCard from "./CategoryCard";
 import FoodCard from "./FoodCard";
+import { useNavigate } from "react-router-dom";
 
 function UserDashboard() {
   const {currentCity,shopInMyCity,itemsInMyCity}= useSelector((state)=>state.user);
   const cateScrollRef = useRef(null);
   const shopScrollRef = useRef(null);
+  const navigate = useNavigate();
   const [showLeftCateButton, setShowLeftCateButton] = useState(false);
   const [showRightCateButton, setShowRightCateButton] = useState(false);
   const [showLeftShopButton, setShowLeftShopButton] = useState(false);
@@ -149,7 +151,7 @@ function UserDashboard() {
             ref={shopScrollRef}
           >
             {shopInMyCity?.map((shop, index) => (
-              <CategoryCard key={index} name={shop.name} image={shop.image} />
+              <CategoryCard key={index} name={shop.name} image={shop.image} onClick={()=>navigate(`/shop/${shop._id}`)}/>
             ))}
           </div>
 
