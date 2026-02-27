@@ -34,7 +34,7 @@ function Shop() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-        <button className='absolute top-4 left-4 z-10 flex items-center gap-2 bg-black/50 hover:bg-black/70 text-white px-3 py-2 rounded-full shadow-transition' onClick={() => navigate("/")}>
+        <button className='absolute top-4 left-4 z-10 flex items-center gap-2 bg-black/50 hover:bg-black/70 text-white px-3 py-2 rounded-full shadow-transition' onClick={() => navigate(-1)}>
             <FaArrowLeft />
             <span>Back</span>
         </button>
