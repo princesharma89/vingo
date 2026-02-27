@@ -17,6 +17,21 @@ function UserDashboard() {
   const [showRightCateButton, setShowRightCateButton] = useState(false);
   const [showLeftShopButton, setShowLeftShopButton] = useState(false);
   const [showRightShopButton, setShowRightShopButton] = useState(false);
+  const [updateItemsList, setUpdateItemsList] = useState(itemsInMyCity);
+
+  const handleFilterByCategory = (category) => {
+    if(category==="All"){
+      setUpdateItemsList(itemsInMyCity);
+    }
+    else{
+      const filteredList = itemsInMyCity.filter((item) => item.category === category);
+      setUpdateItemsList(filteredList);
+    }
+  }
+
+  useEffect(()=>{
+    setUpdateItemsList(itemsInMyCity);
+  },[itemsInMyCity]);
 
   const updateButton = (ref, setLeftButton, setRightButton) => {
     const element = ref.current;
@@ -100,7 +115,7 @@ function UserDashboard() {
             ref={cateScrollRef}
           >
             {categories.map((cat, index) => (
-              <CategoryCard key={index} name={cat.category} image={cat.image} />
+              <CategoryCard key={index} name={cat.category} image={cat.image} onClick={() => handleFilterByCategory(cat.category)} />
             ))}
           </div>
 
@@ -153,7 +168,7 @@ function UserDashboard() {
               Suggested Food Items
             </h1>
             <div className="w-full flex flex-wrap gap-4  justify-center">
-              {itemsInMyCity?.map((item, index) => (
+              {updateItemsList?.map((item, index) => (
                 <FoodCard key={index} data={item}/>
               ))}
             </div>
