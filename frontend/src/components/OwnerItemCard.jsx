@@ -14,7 +14,7 @@ function OwnerItemCard({data}) {
     const dispatch= useDispatch();
     const handleDelete= async()=>{
         try {
-            const result=await axios.delete(`${serverUrl}/api/item/delete/${data._id}`,{withCredentials:true});
+            const result=await axios.delete(`${serverUrl}/api/items/delete/${data._id}`,{withCredentials:true});
             dispatch(setMyShopData(result.data));
         } catch (error) {
             console.log('error in deleting item',error);

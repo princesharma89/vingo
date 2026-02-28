@@ -59,7 +59,7 @@ function EditItem() {
       }
 
       await axios.post(
-        `${serverUrl}/api/item/edit-item/${itemId}`,
+        `${serverUrl}/api/items/edit-item/${itemId}`,
         formData,
         { withCredentials: true }
       );
@@ -76,7 +76,7 @@ function EditItem() {
     const fetchItem = async () => {
       try {
         const result = await axios.get(
-          `${serverUrl}/api/item/get-by-id/${itemId}`,
+          `${serverUrl}/api/items/get-by-id/${itemId}`,
           { withCredentials: true }
         );
         setCurrentItem(result.data);

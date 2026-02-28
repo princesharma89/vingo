@@ -29,7 +29,7 @@ function CheckOut() {
     const apiKey = import.meta.env.VITE_GEO_API_KEY;
 
     const { location, address } = useSelector((state) => state.map);
-    const { cartItems, totalAmount } = useSelector((state) => state.user);
+    const { cartItems, totalAmount,userData } = useSelector((state) => state.user);
 
     const [addressInput, setAddressInput] = useState("");
     const [paymentMethod, setPaymentMethod] = useState("cod");
@@ -61,11 +61,10 @@ function CheckOut() {
     };
 
     const getCurrentLocation = () => {
-        navigator.geolocation.getCurrentPosition(async (position) => {
-            const { latitude, longitude } = position.coords;
+            const latitude=userData.location.coordinates[1];
+            const longitude=userData.location.coordinates[0];
             dispatch(setLocation({ lat: latitude, lon: longitude }));
             getAddressByLatLng(latitude, longitude);
-        });
     };
 
     const getLatLngByAddress = async () => {
