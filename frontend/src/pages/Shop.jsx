@@ -20,7 +20,7 @@ function Shop() {
     const handleShop = async () => {
       try {
         const result = await axios.get(
-          `${serverUrl}/api/item/get-by-shop/${shopId}`,
+          `${serverUrl}/api/items/get-by-shop/${shopId}`,
           { withCredentials: true }
         );
         setShop(result.data.shop);

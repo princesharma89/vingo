@@ -12,7 +12,9 @@ const userSlice = createSlice({
     cartItems: [],
     totalAmount: 0,
     myOrders: [],
+    searchItems: null,
   },
+
   reducers: {
     setUserData: (state, action) => {
       state.userData = action.payload;
@@ -90,17 +92,26 @@ const userSlice = createSlice({
     addMyOrder: (state, action) => {
       state.myOrders = [action.payload, ...state.myOrders];
     },
+
     updateOrderStatus: (state, action) => {
       const { orderId, shopId, status } = action.payload;
       const order = state.myOrders.find((o) => o._id === orderId);
-      if(order && order.shopOrders){
-        const shopOrder = order.shopOrders.find((so) => so.shop?._id?.toString() === shopId);
-        if(shopOrder){
+
+      if (order && order.shopOrders) {
+        const shopOrder = order.shopOrders.find(
+          (so) => so.shop?._id?.toString() === shopId
+        );
+
+        if (shopOrder) {
           shopOrder.status = status;
         }
       }
     },
-  },
+
+    setSearchItems: (state, action) => {
+      state.searchItems = action.payload;
+    },
+  }, // ✅ reducers properly closed
 });
 
 export const {
@@ -114,8 +125,9 @@ export const {
   updateQuantity,
   removeCartItem,
   setMyOrders,
-  addMyOrder, 
-  updateOrderStatus,  
+  addMyOrder,
+  updateOrderStatus,
+  setSearchItems,
 } = userSlice.actions;
 
 export default userSlice.reducer;

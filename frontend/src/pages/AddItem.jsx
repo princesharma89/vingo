@@ -66,7 +66,7 @@ function AddItem() {
       }
 
       const result = await axios.post(
-        `${serverUrl}/api/item/add-item`,
+        `${serverUrl}/api/items/add-item`,
         formData,
         { withCredentials: true }
       );

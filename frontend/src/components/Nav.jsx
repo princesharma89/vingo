@@ -12,13 +12,15 @@ import { FaPlus } from "react-icons/fa6";
 import { TbReceiptDollar } from "react-icons/tb";
 
 import { serverUrl } from '../App.jsx';
-import { setUserData, setCurrentCity } from '../redux/userSlice.js';
+import { setUserData, setCurrentCity, setSearchItems } from '../redux/userSlice.js';
+import { useEffect } from 'react';
 
 function Nav() {
   const { userData, currentCity,cartItems} = useSelector((state) => state.user);
   const { myShopData } = useSelector((state) => state.owner);
   const [showInfo, setShowInfo] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [query, setQuery] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -33,6 +35,23 @@ function Nav() {
       console.log('error in logout', error);
     }
   };
+ 
+    useEffect(()=>{
+       const handleSearchItems = async()=>{
+      try {
+        const result = await axios.get(`${serverUrl}/api/items/search-items?query=${query}&city=${currentCity}`, { withCredentials: true });
+        dispatch(setSearchItems(result.data));
+      } catch (error) {
+        console.log('Error in searching items:', error);
+      }
+    };
+    if(query && currentCity){
+      handleSearchItems();
+    }
+    else{
+      dispatch(setSearchItems([]));
+    }
+    },[query, currentCity, dispatch]);
 
   return (
     <div className='w-full max-w-10xl h-[80px] flex items-center justify-between md:justify-center gap-[30px] px-[20px] fixed top-0 left-0 z-[999] bg-[#fff9f6] overflow-visible'>
@@ -46,7 +65,7 @@ function Nav() {
         {/* search */}
         <div className='w-[80%] flex items-center gap-[10px] '>
           <FaSearch size={25} className='text-[#ff4d2d]' />
-          <input type="text" placeholder='search delicious food...' className='w-full px-[10px] text-gray-700 outline-0' />
+          <input type="text" placeholder='search delicious food...' className='w-full px-[10px] text-gray-700 outline-0' onChange={(e) => setQuery(e.target.value)} value={query}/>
         </div>
       </div>}
       <h1 className='text-3xl font-bold mb-2 text-[#ff4d2d]'>Vingo</h1>
@@ -60,7 +79,7 @@ function Nav() {
         {/* search */}
         <div className='w-[80%] flex items-center gap-[10px] '>
           <FaSearch size={25} className='text-[#ff4d2d]' />
-          <input type="text" placeholder='search delicious food...' className='w-full px-[10px] text-gray-700 outline-0' />
+          <input type="text" placeholder='search delicious food...' className='w-full px-[10px] text-gray-700 outline-0' onChange={(e) => setQuery(e.target.value)} value={query}/>
         </div>
       </div>}
       <div className='flex items-center gap-4'>
