@@ -40,6 +40,8 @@ function OwnerOrderCard({ data }) {
             <p className='flex items-center gap-2 text-sm text-gray-600 mt-1'>
               <MdLocalPhone /> <span>{data.user.mobile}</span>
             </p>
+            {data.paymentMethod === "online" ?<p className='gap-2 text-sm text-gray-600 mt-1'>payment:{data.payment?"True":"False"}</p>:<p className='gap-2 text-sm text-gray-600 mt-1'>Payment Method: {data?.paymentMethod || 'Not specified'}</p>}
+            
           </>
         )}
       </div>

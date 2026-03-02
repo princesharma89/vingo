@@ -29,7 +29,7 @@ function CheckOut() {
     const apiKey = import.meta.env.VITE_GEO_API_KEY;
 
     const { location, address } = useSelector((state) => state.map);
-    const { cartItems, totalAmount,userData } = useSelector((state) => state.user);
+    const { cartItems, totalAmount, userData } = useSelector((state) => state.user);
 
     const [addressInput, setAddressInput] = useState("");
     const [paymentMethod, setPaymentMethod] = useState("cod");
@@ -52,7 +52,7 @@ function CheckOut() {
             dispatch(
                 setAddress(
                     result?.data?.results[0]?.address_line2 ||
-                        result?.data?.results[0]?.address_line1
+                    result?.data?.results[0]?.address_line1
                 )
             );
         } catch (error) {
@@ -61,10 +61,10 @@ function CheckOut() {
     };
 
     const getCurrentLocation = () => {
-            const latitude=userData.location.coordinates[1];
-            const longitude=userData.location.coordinates[0];
-            dispatch(setLocation({ lat: latitude, lon: longitude }));
-            getAddressByLatLng(latitude, longitude);
+        const latitude = userData.location.coordinates[1];
+        const longitude = userData.location.coordinates[0];
+        dispatch(setLocation({ lat: latitude, lon: longitude }));
+        getAddressByLatLng(latitude, longitude);
     };
 
     const getLatLngByAddress = async () => {
@@ -86,6 +86,52 @@ function CheckOut() {
         }
     };
 
+    const openRazorpayWindow = (razorOrder, orderId) => {
+        const options = {
+            key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+            amount: razorOrder.amount,
+            currency: 'INR',
+            name: "Vingo",
+            description: "Food Delivery Website",
+            order_id: razorOrder.id,
+            handler: async function (response) {
+                try {
+                    const result = await axios.post(
+                        `${serverUrl}/api/order/verify-payment`,
+                        {
+                            orderId: orderId,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature,
+                        },
+                        { withCredentials: true }
+                    );
+                    dispatch(addMyOrder(result.data));
+                    navigate("/order-placed");
+                } catch (error) {
+                    console.error("Error verifying payment:", error);
+                    alert("Payment verification failed. Please contact support.");
+                }
+            },
+            prefill: {
+                name: userData?.fullName || "",
+                email: userData?.email || "",
+                contact: userData?.mobile || "",
+            },
+            theme: {
+                color: "#ff4d2d",
+            },
+        };
+
+        if (window.Razorpay) {
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+        } else {
+            console.error('Razorpay SDK not loaded');
+            alert('Payment system is loading. Please try again in a moment.');
+        }
+    };
+
     const handlePlaceOrder = async () => {
         try {
             const result = await axios.post(
@@ -98,14 +144,18 @@ function CheckOut() {
                         longitude: location.lon,
                     },
                     cartItems,
-                    totalAmount,
+                    totalAmount:AmountWithDeliveryFee,
                 },
                 { withCredentials: true }
             );
-
-            dispatch(addMyOrder(result.data));
-            console.log("Order placed successfully:", result.data);
-            navigate("/order-placed");
+            if (paymentMethod === "cod") {
+                dispatch(addMyOrder(result.data));
+                navigate("/order-placed");
+            }
+            else {
+                const { razorOrder, orderId } = result.data;
+                openRazorpayWindow(razorOrder, orderId);
+            }
         } catch (error) {
             console.log("Error placing order:", error);
         }
@@ -186,11 +236,10 @@ function CheckOut() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div
-                            className={`flex items-center gap-3 rounded-xl border p-4 transition ${
-                                paymentMethod === "cod"
-                                    ? "border-[#ff4d2d] bg-orange-50 shadow"
-                                    : "border-gray-200 hover:border-gray-300"
-                            }`}
+                            className={`flex items-center gap-3 rounded-xl border p-4 transition ${paymentMethod === "cod"
+                                ? "border-[#ff4d2d] bg-orange-50 shadow"
+                                : "border-gray-200 hover:border-gray-300"
+                                }`}
                             onClick={() => setPaymentMethod("cod")}
                         >
                             <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
@@ -207,11 +256,10 @@ function CheckOut() {
                         </div>
 
                         <div
-                            className={`flex items-center gap-3 rounded-xl border p-4 transition ${
-                                paymentMethod === "online"
-                                    ? "border-[#ff4d2d] bg-orange-50 shadow"
-                                    : "border-gray-200 hover:border-gray-300"
-                            }`}
+                            className={`flex items-center gap-3 rounded-xl border p-4 transition ${paymentMethod === "online"
+                                ? "border-[#ff4d2d] bg-orange-50 shadow"
+                                : "border-gray-200 hover:border-gray-300"
+                                }`}
                             onClick={() => setPaymentMethod("online")}
                         >
                             <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
