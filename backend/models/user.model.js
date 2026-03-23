@@ -32,6 +32,13 @@ const userSchema = new mongoose.Schema({
     otpExpires:{
         type:Date,
     },
+    socketId:{
+        type:String,
+    },
+    isOnline:{
+        type:Boolean,
+        default:false,
+    },
     /*
  GeoJSON (Geospatial JSON) is a standard format used to represent
  geographical data structures using JSON.

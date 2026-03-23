@@ -1,6 +1,10 @@
 import React from 'react'
 import { Routes,Route,Navigate } from 'react-router-dom'
+import { io } from 'socket.io-client'
 import { useSelector } from 'react-redux'
+import { useEffect } from 'react'
+import { useDispatch } from 'react-redux'
+import { setSocket } from './redux/userSlice.js'
 
 import SignUp from './pages/SignUp.jsx'
 import SignIn from './pages/SignIn.jsx'
@@ -8,7 +12,6 @@ import ForgotPassword from './pages/ForgotPassword.jsx'
 import useGetCurrentUser from './hooks/useGetCurrentUser.jsx'
 import useGetCity from './hooks/useGetCity.jsx'
 import Home from './pages/Home.jsx'
-import { use } from 'react'
 import useGetMyShop from './hooks/useGetMyShop.jsx'
 import CreateEditShop from './pages/CreateEditShop.jsx'
 import AddItem from './pages/AddItem.jsx'
@@ -27,6 +30,7 @@ import Shop from './pages/Shop.jsx'
 export const serverUrl="http://localhost:8000"
 
 function App() {
+  const {userData}=useSelector((state)=>state.user);
   useGetCurrentUser();
   useUpdateLocation();
   useGetCity();
@@ -34,7 +38,20 @@ function App() {
   useGetShopByCity();
   useGetItemsByCity();
   useGetMyOrders();
-  const {userData}=useSelector((state)=>state.user);
+  const dispatch=useDispatch();
+
+  useEffect(()=>{
+    const socketInstance = io(serverUrl,{withCredentials:true});
+    dispatch(setSocket(socketInstance));
+    socketInstance.on('connect', () => {
+      if(userData){
+        socketInstance.emit('identity',{userId:userData._id});
+      }
+    });
+    return ()=>{
+      socketInstance.disconnect();
+    }
+  }, [dispatch, userData])
   return (
     <Routes>
       <Route path="/signup" element={!userData?<SignUp />:<Navigate to="/" />} />
