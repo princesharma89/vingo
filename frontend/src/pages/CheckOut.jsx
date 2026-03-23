@@ -168,13 +168,13 @@ function CheckOut() {
     return (
         <div className="min-h-screen bg-[#fff9f6] flex items-center justify-center p-6">
             <div
-                className="absolute top-[20px] left-[20px] z-[10]"
+                className="absolute top-5 left-5 z-10"
                 onClick={() => navigate("/")}
             >
                 <IoMdArrowBack size={35} className="text-[#ff4d2d]" />
             </div>
 
-            <div className="w-full max-w-[900px] bg-white rounded-2xl shadow-xl p-6 space-y-6">
+            <div className="w-full max-w-225 bg-white rounded-2xl shadow-xl p-6 space-y-6">
                 <h1 className="text-2xl font-bold text-gray-800">Checkout</h1>
 
                 {/* Delivery Location */}

@@ -71,26 +71,26 @@ export const placeOrder = async (req, res) => {
         };
       }),
     );
-  if(paymentMethod === "online"){
-    const razorOrder=await instance.orders.create({
-      amount: Math.round(totalAmount*100),
-      currency:"INR",
-      receipt: `order_rcptid_${new Date().getTime()}`,
-    })
-    const newOrder = await Order.create({
-      user: req.userId,
-      paymentMethod,
-      deliveryAddress,
-      totalAmount,
-      shopOrders,
-      razorpayOrderId: razorOrder.id,
-      payment:false
-    });
-    return res.status(201).json({
-      orderId: newOrder._id,
-      razorOrder,
-    })
-  }
+    if (paymentMethod === "online") {
+      const razorOrder = await instance.orders.create({
+        amount: Math.round(totalAmount * 100),
+        currency: "INR",
+        receipt: `order_rcptid_${new Date().getTime()}`,
+      });
+      const newOrder = await Order.create({
+        user: req.userId,
+        paymentMethod,
+        deliveryAddress,
+        totalAmount,
+        shopOrders,
+        razorpayOrderId: razorOrder.id,
+        payment: false,
+      });
+      return res.status(201).json({
+        orderId: newOrder._id,
+        razorOrder,
+      });
+    }
 
     const newOrder = await Order.create({
       user: req.userId,
@@ -105,60 +105,104 @@ export const placeOrder = async (req, res) => {
       "name image price",
     );
     await newOrder.populate("shopOrders.shop", "name");
+    await newOrder.populate("shopOrders.owner", "name socketId");
+    await newOrder.populate("user", "name email mobile");
+    const io = req.app.get("io");
+
+    if (io) {
+      newOrder.shopOrders.forEach((shopOrder) => {
+        const ownerSocketId = shopOrder.owner.socketId;
+        if (ownerSocketId) {
+          io.to(ownerSocketId).emit("newOrder", {
+            _id: newOrder._id,
+            paymentMethod: newOrder.paymentMethod,
+            user: newOrder.user,
+            deliveryAddress: newOrder.deliveryAddress,
+            shopOrders: shopOrder,
+            createdAt: newOrder.createdAt,
+            payment: newOrder.payment,
+          });
+        }
+      });
+    }
 
     return res.status(201).json(newOrder);
   } catch (error) {
     return res.status(500).json({ message: `order placement failed ${error}` });
   }
 };
-export const verifyPayment = async(req,res)=>{
+export const verifyPayment = async (req, res) => {
   try {
-      const {orderId, razorpay_payment_id, razorpay_order_id, razorpay_signature} = req.body;
-      
-      // Verify signature (CRITICAL for security)
-      const body = `${razorpay_order_id}|${razorpay_payment_id}`;
-      const expectedSignature = crypto
-        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-        .update(body)
-        .digest("hex");
-      
-      if (expectedSignature !== razorpay_signature) {
-        return res.status(400).json({ message: "Invalid payment signature" });
-      }
-      
-      // Fetch payment details from Razorpay
-      const payment = await instance.payments.fetch(razorpay_payment_id);
-      if(!payment || payment.status!=="captured"){
-        return res.status(400).json({ message: "payment not captured" });
-      }
-      
-      // Find and update order
-      const order = await Order.findById(orderId);
-      if(!order){
-        return res.status(404).json({ message: "order not found" });
-      }
-      
-      // Additional validation: verify razorpay order id matches
-      if(order.razorpayOrderId !== razorpay_order_id){
-        return res.status(400).json({ message: "Order ID mismatch" });
-      }
-      
-      order.payment = true;
-      order.razorpayPaymentId = razorpay_payment_id;
-      order.razorpaySignature = razorpay_signature;
-      await order.save();
-      
-      await order.populate(
-        "shopOrders.shopOrderItems.item",
-        "name image price",
-      );
-      await order.populate("shopOrders.shop", "name");
-      
-      return res.status(200).json(order);
+    const {
+      orderId,
+      razorpay_payment_id,
+      razorpay_order_id,
+      razorpay_signature,
+    } = req.body;
+
+    // Verify signature (CRITICAL for security)
+    const body = `${razorpay_order_id}|${razorpay_payment_id}`;
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(body)
+      .digest("hex");
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ message: "Invalid payment signature" });
+    }
+
+    // Fetch payment details from Razorpay
+    const payment = await instance.payments.fetch(razorpay_payment_id);
+    if (!payment || payment.status !== "captured") {
+      return res.status(400).json({ message: "payment not captured" });
+    }
+
+    // Find and update order
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: "order not found" });
+    }
+
+    // Additional validation: verify razorpay order id matches
+    if (order.razorpayOrderId !== razorpay_order_id) {
+      return res.status(400).json({ message: "Order ID mismatch" });
+    }
+
+    order.payment = true;
+    order.razorpayPaymentId = razorpay_payment_id;
+    order.razorpaySignature = razorpay_signature;
+    await order.save();
+
+    await order.populate("shopOrders.shopOrderItems.item", "name image price");
+    await order.populate("shopOrders.shop", "name");
+    await order.populate("shopOrders.owner", "name socketId");
+    await order.populate("user", "name email mobile");
+    const io = req.app.get("io");
+
+    if (io) {
+      order.shopOrders.forEach((shopOrder) => {
+        const ownerSocketId = shopOrder.owner.socketId;
+        if (ownerSocketId) {
+          io.to(ownerSocketId).emit("newOrder", {
+            _id: order._id,
+            paymentMethod: order.paymentMethod,
+            user: order.user,
+            deliveryAddress: order.deliveryAddress,
+            shopOrders: shopOrder,
+            createdAt: order.createdAt,
+            payment: order.payment,
+          });
+        }
+      });
+    }
+
+    return res.status(200).json(order);
   } catch (error) {
-    return res.status(500).json({ message: `payment verification failed: ${error.message}` });
+    return res
+      .status(500)
+      .json({ message: `payment verification failed: ${error.message}` });
   }
-}
+};
 
 export const getMyOrders = async (req, res) => {
   try {
@@ -181,7 +225,7 @@ export const getMyOrders = async (req, res) => {
         .populate("shopOrders.shop", "name")
         .populate("user", "fullName email mobile")
         .populate("shopOrders.shopOrderItems.item", "name image price")
-        .populate("shopOrders.assignedDeliveryBoy","fullName email mobile");
+        .populate("shopOrders.assignedDeliveryBoy", "fullName email mobile");
 
       const filteredOrders = orders.map((order) => ({
         _id: order._id,
@@ -224,9 +268,8 @@ export const updateOrderStatus = async (req, res) => {
     }
 
     shopOrder.status = status;
-    let deliveryBoysPayload=[];
-    if (status === "ready for pickup" && !shopOrder.assignment) 
-      {
+    let deliveryBoysPayload = [];
+    if (status === "ready for pickup" && !shopOrder.assignment) {
       const { latitude, longitude } = order.deliveryAddress;
       const nearByDeliveryBoys = await User.find({
         role: "deliveryBoy",
@@ -257,33 +300,64 @@ export const updateOrderStatus = async (req, res) => {
             "order status is updated but there is no available delivery boys",
         });
       }
-    
-    const deliveryAssignment = await DeliveryAssignment.create({
-      order: order._id,
-      shop: shopOrder.shop,
-      shopOrderId: shopOrder._id,
-      broadcatedTo: candidates,
-      status: "broadcasted",
-    });
-    shopOrder.assignedDeliveryBoy= deliveryAssignment.assignedTo;
-    shopOrder.assignment = deliveryAssignment._id;
-    deliveryBoysPayload=availableBoys.map((b) => ({
-      id:b._id,
-      name:b.fullName,
-      mobile:b.mobile,
-      longitude:b.location.coordinates?.[0],
-      latitude:b.location.coordinates?.[1],
-     })
-    );
 
-  }
+      const deliveryAssignment = await DeliveryAssignment.create({
+        order: order._id,
+        shop: shopOrder.shop,
+        shopOrderId: shopOrder._id,
+        broadcatedTo: candidates,
+        status: "broadcasted",
+      });
+      shopOrder.assignedDeliveryBoy = deliveryAssignment.assignedTo;
+      shopOrder.assignment = deliveryAssignment._id;
+      deliveryBoysPayload = availableBoys.map((b) => ({
+        id: b._id,
+        name: b.fullName,
+        mobile: b.mobile,
+        longitude: b.location.coordinates?.[0],
+        latitude: b.location.coordinates?.[1],
+      }));
+      await deliveryAssignment.populate("order");
+      await deliveryAssignment.populate("shop");
+      const io = req.app.get("io");
+      if (io) {
+        availableBoys.forEach((boy) => {
+          const boySocketId = boy.socketId;
+          if (boySocketId) {
+            io.to(boySocketId).emit("new-delivery-assignment", {
+              sentTo:boy._id,
+              assignmentId: deliveryAssignment._id,
+              orderId: deliveryAssignment.order._id,
+              shopName: deliveryAssignment.shop.name,
+              deliveryAddress: deliveryAssignment.order.deliveryAddress,
+              items: shopOrder?.shopOrderItems || [],
+              subTotal: shopOrder?.subTotal || 0,
+            });
+          }
+        });
+      }
+    }
     await shopOrder.save();
     await order.save();
-    const updatedShopOrder = order.shopOrders.find((o) => o.shop== shopId);
+    const updatedShopOrder = order.shopOrders.find((o) => o.shop == shopId);
     await order.populate("shopOrders.shop", "name");
-   await order.populate("shopOrders.assignedDeliveryBoy","fullName email mobile")
-
-   
+    await order.populate(
+      "shopOrders.assignedDeliveryBoy",
+      "fullName email mobile",
+    );
+    await order.populate("user", "socketId");
+    const io = req.app.get("io");
+    if (io) {
+      const userSocketId = order.user?.socketId;
+      if (userSocketId) {
+        io.to(userSocketId).emit("update-status", {
+          orderId: order._id,
+          shopId: updatedShopOrder.shop?._id || updatedShopOrder.shop,
+          status: updatedShopOrder.status,
+          userId: order.user._id,
+        });
+      }
+    }
 
     return res.status(200).json({
       shopOrder: updatedShopOrder,
@@ -297,183 +371,216 @@ export const updateOrderStatus = async (req, res) => {
       .json({ message: `updating order status failed ${error}` });
   }
 };
-export const getDeliveryBoyAssignment = async (req,res)=>{
-        try {
-          const deliveryBoyId = req.userId;
-          const assignments = await DeliveryAssignment.find({
-            broadcatedTo: deliveryBoyId,
-            status: "broadcasted",
-          })
-          .populate("order")
-          .populate("shop")
-          
-          const formated=assignments.map(a=>{
-            if(!a.order || !a.shop){
-              return null;
-            }
-            const shopOrder = a.order.shopOrders?.find(so=>so._id.toString()===a.shopOrderId.toString());
-            return {
-              assignmentId:a._id,
-              orderId: a.order._id,
-              shopName: a.shop.name,
-              deliveryAddress: a.order.deliveryAddress,
-              items: shopOrder?.shopOrderItems || [],
-              subTotal: shopOrder?.subTotal || 0,
-            }
-          }).filter(a=>a!==null);
-          
-          return res.status(200).json(formated);
-        } catch (error) {
-          console.error('get assignment error:', error);
-          return res.status(500).json({ message: 'get assignment error', error: error.message});
+export const getDeliveryBoyAssignment = async (req, res) => {
+  try {
+    const deliveryBoyId = req.userId;
+    const assignments = await DeliveryAssignment.find({
+      broadcatedTo: deliveryBoyId,
+      status: "broadcasted",
+    })
+      .populate("order")
+      .populate("shop");
+
+    const formated = assignments
+      .map((a) => {
+        if (!a.order || !a.shop) {
+          return null;
         }
-}
-export const acceptOrder= async (req,res)=>{
+        const shopOrder = a.order.shopOrders?.find(
+          (so) => so._id.toString() === a.shopOrderId.toString(),
+        );
+        return {
+          assignmentId: a._id,
+          orderId: a.order._id,
+          shopName: a.shop.name,
+          deliveryAddress: a.order.deliveryAddress,
+          items: shopOrder?.shopOrderItems || [],
+          subTotal: shopOrder?.subTotal || 0,
+        };
+      })
+      .filter((a) => a !== null);
+
+    return res.status(200).json(formated);
+  } catch (error) {
+    console.error("get assignment error:", error);
+    return res
+      .status(500)
+      .json({ message: "get assignment error", error: error.message });
+  }
+};
+export const acceptOrder = async (req, res) => {
   try {
     const { assignmentId } = req.params;
     const assignment = await DeliveryAssignment.findById(assignmentId);
-    if(!assignment){
+    if (!assignment) {
       return res.status(404).json({ message: "assignment not found" });
     }
-    if(assignment.status !== "broadcasted"){
+    if (assignment.status !== "broadcasted") {
       return res.status(400).json({ message: "assignment is expired" });
     }
     const alreadyAssigned = await DeliveryAssignment.findOne({
       assignedTo: req.userId,
-      status: { $nin: ["completed", "cancelled","broadcasted"] },
-    })
-    if(alreadyAssigned){
-      return res.status(400).json({ message: "you already have an active assignment" });
+      status: { $nin: ["completed", "cancelled", "broadcasted"] },
+    });
+    if (alreadyAssigned) {
+      return res
+        .status(400)
+        .json({ message: "you already have an active assignment" });
     }
     assignment.assignedTo = req.userId;
     assignment.status = "assigned";
     assignment.acceptedAt = new Date();
     await assignment.save();
-    const order=await Order.findById(assignment.order);
-    if(!order){
+    const order = await Order.findById(assignment.order);
+    if (!order) {
       return res.status(404).json({ message: "order not found" });
     }
-    const shopOrder=order.shopOrders.find(so=>so._id.toString()===assignment.shopOrderId.toString());
-    shopOrder.assignedDeliveryBoy=req.userId;
+    const shopOrder = order.shopOrders.find(
+      (so) => so._id.toString() === assignment.shopOrderId.toString(),
+    );
+    shopOrder.assignedDeliveryBoy = req.userId;
     await order.save();
-    return res.status(200).json({ message: "assignment accepted successfully" });
+    return res
+      .status(200)
+      .json({ message: "assignment accepted successfully" });
   } catch (error) {
     console.error("Error accepting assignment:", error);
-    return res.status(500).json({ message: "Error accepting assignment", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Error accepting assignment", error: error.message });
   }
-}
-export const getCurrentOrder= async (req,res)=>{
+};
+export const getCurrentOrder = async (req, res) => {
   try {
     const assignment = await DeliveryAssignment.findOne({
       assignedTo: req.userId,
       status: "assigned",
     })
-    .populate("shop","name")
-    .populate("assignedTo","fullName email mobile location")
-    .populate({
-      path:"order",
-      populate:[
-        {path:"user", select:"fullName email mobile location"},
-        {path:"shopOrders.shop", select:"name"}
-      ]
-    })
-    if(!assignment){
+      .populate("shop", "name")
+      .populate("assignedTo", "fullName email mobile location")
+      .populate({
+        path: "order",
+        populate: [
+          { path: "user", select: "fullName email mobile location" },
+          { path: "shopOrders.shop", select: "name" },
+        ],
+      });
+    if (!assignment) {
       return res.status(404).json({ message: "no active assignment found" });
     }
-    if(!assignment.order){
+    if (!assignment.order) {
       return res.status(404).json({ message: "order not found" });
     }
-      const shopOrder = assignment.order.shopOrders?.find(so=>so._id.toString()===assignment.shopOrderId.toString());
-      if(!shopOrder){
-        return res.status(404).json({ message: "shop order not found" });
-      }
-      let deliveryBoyLocation={lat:null,lng:null};
-      if(assignment.assignedTo.location.coordinates.length===2){
-        deliveryBoyLocation.lat=assignment.assignedTo.location.coordinates[1];
-      deliveryBoyLocation.lng=assignment.assignedTo.location.coordinates[0];
-      }
-      
-      let customerLocation={lat:null,lng:null};
-      if(assignment.order.user.location.coordinates.length===2){
-      customerLocation.lat=assignment.order.user.location.coordinates[1];
-      customerLocation.lng=assignment.order.user.location.coordinates[0];
-      }
-      return res.status(200).json({
-        _id: assignment._id,
-        orderId: assignment.order._id,
-        user: assignment.order.user,
-        shop: assignment.shop,
-        shopOrder,
-        deliveryAddress: assignment.order.deliveryAddress,
-        deliveryBoyLocation,
-        customerLocation,
-      })
+    const shopOrder = assignment.order.shopOrders?.find(
+      (so) => so._id.toString() === assignment.shopOrderId.toString(),
+    );
+    if (!shopOrder) {
+      return res.status(404).json({ message: "shop order not found" });
+    }
+    let deliveryBoyLocation = { lat: null, lng: null };
+    if (assignment.assignedTo.location.coordinates.length === 2) {
+      deliveryBoyLocation.lat = assignment.assignedTo.location.coordinates[1];
+      deliveryBoyLocation.lng = assignment.assignedTo.location.coordinates[0];
+    }
+
+    let customerLocation = { lat: null, lng: null };
+    if (assignment.order.user.location.coordinates.length === 2) {
+      customerLocation.lat = assignment.order.user.location.coordinates[1];
+      customerLocation.lng = assignment.order.user.location.coordinates[0];
+    }
+    return res.status(200).json({
+      _id: assignment._id,
+      orderId: assignment.order._id,
+      user: assignment.order.user,
+      shop: assignment.shop,
+      shopOrder,
+      deliveryAddress: assignment.order.deliveryAddress,
+      deliveryBoyLocation,
+      customerLocation,
+    });
   } catch (error) {
-    return res.status(500).json({ message: "Error fetching current order", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Error fetching current order", error: error.message });
   }
-}
+};
 
 export const getOrderById = async (req, res) => {
   try {
     const { orderId } = req.params;
     const order = await Order.findById(orderId)
-    .populate("user", "fullName email mobile location")
-    .populate("shopOrders.shop", "name")
-    .populate("shopOrders.shopOrderItems.item", "name image price")
-    .populate("shopOrders.assignedDeliveryBoy", "fullName email mobile location")
-    .lean();
-    if(!order){
+      .populate("user", "fullName email mobile location")
+      .populate("shopOrders.shop", "name")
+      .populate("shopOrders.shopOrderItems.item", "name image price")
+      .populate(
+        "shopOrders.assignedDeliveryBoy",
+        "fullName email mobile location",
+      )
+      .lean();
+    if (!order) {
       return res.status(404).json({ message: "order not found" });
     }
     return res.status(200).json(order);
   } catch (error) {
     console.error("Error fetching order by ID:", error);
-    return res.status(500).json({ message: "Error fetching order by ID", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Error fetching order by ID", error: error.message });
   }
-}
+};
 
 export const sendDeliveryOtp = async (req, res) => {
   try {
-    const {orderId, shopOrderId} = req.body;
+    const { orderId, shopOrderId } = req.body;
     const order = await Order.findById(orderId).populate("user");
-    const shopOrder = order.shopOrders.find(so=>so._id.toString()===shopOrderId.toString());
-    if(!shopOrder || !order){
+    const shopOrder = order.shopOrders.find(
+      (so) => so._id.toString() === shopOrderId.toString(),
+    );
+    if (!shopOrder || !order) {
       return res.status(404).json({ message: "enter valid order/shoporderid" });
     }
-    const otp= Math.floor(1000 + Math.random() * 9000).toString();
-    shopOrder.deliveryOtp=otp;
-    shopOrder.otpExpires= new Date(Date.now() + 5*60*1000);
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    shopOrder.deliveryOtp = otp;
+    shopOrder.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
     await order.save();
     await sendDeliveryOtpMail(order.user, otp);
-    return res.status(200).json({ message: `OTP sent Successfully to ${order.user.fullName}` });
+    return res
+      .status(200)
+      .json({ message: `OTP sent Successfully to ${order.user.fullName}` });
   } catch (error) {
-    return res.status(500).json({ message: "Error sending delivery OTP", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Error sending delivery OTP", error: error.message });
   }
-}
+};
 export const verifyDeliveryOtp = async (req, res) => {
   try {
-    const {orderId,shopOrderId,otp}=req.body;
+    const { orderId, shopOrderId, otp } = req.body;
     const order = await Order.findById(orderId);
-    const shopOrder = order.shopOrders.find(so=>so._id.toString()===shopOrderId.toString());
-    if(!shopOrder || !order){
+    const shopOrder = order.shopOrders.find(
+      (so) => so._id.toString() === shopOrderId.toString(),
+    );
+    if (!shopOrder || !order) {
       return res.status(404).json({ message: "enter valid order/shoporderid" });
     }
-    if(shopOrder.deliveryOtp!==otp){
+    if (shopOrder.deliveryOtp !== otp) {
       return res.status(400).json({ message: "Invalid OTP" });
     }
-    if(shopOrder.otpExpires<Date.now()){
+    if (shopOrder.otpExpires < Date.now()) {
       return res.status(400).json({ message: "OTP expired" });
     }
-    shopOrder.status="delivered";
-    shopOrder.deliveredAt=Date.now();
+    shopOrder.status = "delivered";
+    shopOrder.deliveredAt = Date.now();
     await order.save();
     await DeliveryAssignment.deleteOne({
       shopOrderId: shopOrder._id,
       order: order._id,
       assignedTo: shopOrder.assignedDeliveryBoy,
-    })
+    });
     return res.status(200).json({ message: "Order delivered successfully" });
   } catch (error) {
-    return res.status(500).json({ message: "Error verifying delivery OTP", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Error verifying delivery OTP", error: error.message });
   }
-}
+};
